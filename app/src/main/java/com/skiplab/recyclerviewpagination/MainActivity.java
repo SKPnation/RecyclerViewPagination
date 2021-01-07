@@ -39,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
 
     Context mContext = MainActivity.this;
 
-    DatabaseReference usersDb;
+    List<User> userList = new ArrayList<>();
 
-    NestedScrollView nestedScrollView;
+    DatabaseReference usersDb;
 
     RecyclerView recyclerView;
     LinearLayoutManager layoutManager;    //for linear layout
@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        nestedScrollView = findViewById(R.id.nested_scrollview);
         recyclerView = findViewById(R.id.recycler_view);
         progressBar = findViewById(R.id.progressBar);
         btnAdd = findViewById(R.id.addBtn);
@@ -90,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), layoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        adapter = new MyAdapter(this);
+        adapter = new MyAdapter(this, userList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
 
