@@ -85,11 +85,11 @@ public class MainActivity extends AppCompatActivity {
 
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
-        //layoutManager.setReverseLayout(true);
+        layoutManager.setReverseLayout(true);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), layoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        adapter = new MyAdapter(this, userList);
+        adapter = new MyAdapter(mContext, userList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
 

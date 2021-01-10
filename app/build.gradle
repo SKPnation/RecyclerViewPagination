@@ -28,15 +28,14 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+    //firebase libraries
     implementation 'com.google.firebase:firebase-core:16.0.3'
     implementation 'com.google.firebase:firebase-database:16.0.2'
     implementation 'com.google.firebase:firebase-ads:15.0.1'
+    //google ads services
     implementation 'com.google.android.gms:play-services-ads:11.2.0'
 
-    //admob native recyclerview
-    implementation 'com.github.shehabic:admobadapter:1.0'
 
-    //implementation 'com.github.daoibrahim:AdmobAdvancedNativeRecyclerview:1.0.0'
 
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
