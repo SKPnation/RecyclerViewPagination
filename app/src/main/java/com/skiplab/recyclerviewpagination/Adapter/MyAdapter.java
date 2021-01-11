@@ -17,11 +17,17 @@ import java.util.List;
 
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
+    // A menu item view type.
+    private static final int MENU_ITEM_VIEW_TYPE = 0;
+
+    // The banner ad view type.
+    private static final int BANNER_AD_VIEW_TYPE = 1;
+
     List<User> userList;
     Context context;
 
-    public MyAdapter(Context context) {
-        this.userList = new ArrayList<>();
+    public MyAdapter(Context context, List<User> userList) {
+        this.userList = userList;
         this.context = context;
     }
 

@@ -22,6 +22,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,19 +31,27 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.skiplab.recyclerviewpagination.Adapter.MyAdapter;
 import com.skiplab.recyclerviewpagination.Model.User;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class MainActivity extends AppCompatActivity {
 
     Context mContext = MainActivity.this;
 
+    List<User> userList = new ArrayList<>();
+    ArrayList<String> mUserIds = new ArrayList<>();
     DatabaseReference usersDb;
-
-    NestedScrollView nestedScrollView;
+    CollectionReference usersCollection;
 
     RecyclerView recyclerView;
     LinearLayoutManager layoutManager;    //for linear layout
@@ -50,19 +60,19 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     ImageView btnAdd;
 
-    int ITEM_LOAD_COUNT= 12;
+    int ITEM_LOAD_COUNT= 10;
     int currentitems,tottalitems,scrolledoutitems;
     String last_key="",last_node="";
     boolean isMaxData=false,isScrolling=false;
 
-    long maxId=0;
+    long firebaseDbMaxId=0;
+    long firestoreDocMaxId=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        nestedScrollView = findViewById(R.id.nested_scrollview);
         recyclerView = findViewById(R.id.recycler_view);
         progressBar = findViewById(R.id.progressBar);
         btnAdd = findViewById(R.id.addBtn);
@@ -70,11 +80,21 @@ public class MainActivity extends AppCompatActivity {
         getLastKeyFromFirebase();
 
         usersDb = FirebaseDatabase.getInstance().getReference().child("Users");
+        usersCollection = FirebaseFirestore.getInstance().collection("Users");
+
+        usersCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot documentSnapshots, @Nullable FirebaseFirestoreException e) {
+                if (documentSnapshots.size() >= 0)
+                    firestoreDocMaxId = documentSnapshots.size();
+            }
+        });
+
         usersDb.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists())
-                    maxId = dataSnapshot.getChildrenCount();
+                    firebaseDbMaxId = dataSnapshot.getChildrenCount();
             }
 
             @Override
@@ -86,11 +106,11 @@ public class MainActivity extends AppCompatActivity {
 
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
-        //layoutManager.setReverseLayout(true);
+        layoutManager.setReverseLayout(true);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), layoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        adapter = new MyAdapter(this);
+        adapter = new MyAdapter(this,userList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -155,17 +175,65 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        User user = new User();
-                        user.setEmail(emailEt.getText().toString());
-                        user.setId(String.valueOf(maxId+1));
-                        user.setName(nameEt.getText().toString());
-                        usersDb.child(String.valueOf(maxId+1)).setValue(user)
-                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+
+                        usersDb
+                                .addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Toast.makeText(mContext,"User added successfully",Toast.LENGTH_SHORT).show();
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        for (DataSnapshot ds: dataSnapshot.getChildren()){
+                                            //String[] mIds = new String[mUserIds.size()];
+                                            long data = Long.parseLong(ds.getValue(User.class).getId());
+                                            long[] a = new long[]{data};
+                                            long max = firebaseDbMaxId+1;
+                                            for (int i=0; i<a.length; i++){
+                                                if (a[i] > max)
+                                                {
+                                                    max = a[i];
+
+                                                    Toast.makeText(mContext, max+"", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
+                                            //mUserIds.add(data);
+
+                                            mUserIds.clear();
+
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
                                     }
                                 });
+//                        User user1 = new User();
+//                        user1.setId(String.valueOf(firebaseDbMaxId+1));
+//                        user1.setName(nameEt.getText().toString());
+//                        user1.setEmail(emailEt.getText().toString());
+//
+//                        //Set to Firebase database
+//                        usersDb.child(String.valueOf(firebaseDbMaxId+1)).setValue(user1)
+//                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                    @Override
+//                                    public void onSuccess(Void aVoid) {
+//                                        User user2 = new User(
+//                                                String.valueOf(firestoreDocMaxId+1),
+//                                                nameEt.getText().toString(),
+//                                                emailEt.getText().toString()
+//                                                );
+//
+//                                        //Set to Cloud Firestore
+//                                        FirebaseFirestore.getInstance()
+//                                                .collection("Users")
+//                                                .document(String.valueOf(firestoreDocMaxId+1))
+//                                                .set(user2)
+//                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void aVoid) {
+//                                                        Toast.makeText(mContext,"User added successfully",Toast.LENGTH_SHORT).show();
+//                                                    }
+//                                                });
+//                                    }
+//                                });
 
                     }
                 });
@@ -206,10 +274,10 @@ public class MainActivity extends AppCompatActivity {
                             newUsers.add(userSnapshot.getValue(User.class));
                         }
 
-                        last_node =newUsers.get(newUsers.size()-1).getId();    //12  if it greater than the toatal items set to visible then fetch data from server
+                        last_node =newUsers.get(newUsers.size()-1).getId();    //10  if it greater than the toatal items set to visible then fetch data from server
 
                         if(!last_node.equals(last_key))
-                            newUsers.remove(newUsers.size()-1);    // 23,23 so to renove duplicate removeone value
+                            newUsers.remove(newUsers.size()-1);    // 19,19 so to renove duplicate removeone value
                         else
                             last_node="end";
 
