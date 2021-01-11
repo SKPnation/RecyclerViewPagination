@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), layoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
 
-        adapter = new MyAdapter(this,userList);
+        adapter = new MyAdapter(this, userList);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -193,7 +193,6 @@ public class MainActivity extends AppCompatActivity {
                                                     Toast.makeText(mContext, max+"", Toast.LENGTH_SHORT).show();
                                                 }
                                             }
-                                            //mUserIds.add(data);
 
                                             mUserIds.clear();
 
