@@ -1,6 +1,7 @@
 package com.skiplab.recyclerviewpagination;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -11,8 +12,10 @@ import androidx.recyclerview.widget.RecyclerView.Adapter;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AbsoluteLayout;
@@ -40,6 +43,7 @@ import com.skiplab.recyclerviewpagination.Adapter.MyAdapter;
 import com.skiplab.recyclerviewpagination.Model.User;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -49,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     Context mContext = MainActivity.this;
 
     List<User> userList = new ArrayList<>();
-    ArrayList<String> mUserIds = new ArrayList<>();
+    ArrayList<Long> list = new ArrayList<Long>();
     DatabaseReference usersDb;
     CollectionReference usersCollection;
 
@@ -60,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     ImageView btnAdd;
 
+    long max;
     int ITEM_LOAD_COUNT= 10;
     int currentitems,tottalitems,scrolledoutitems;
     String last_key="",last_node="";
@@ -107,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         layoutManager.setReverseLayout(true);
+
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), layoutManager.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
 
@@ -176,63 +182,64 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
 
-                        usersDb
-                                .addListenerForSingleValueEvent(new ValueEventListener() {
+                        usersDb.addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                         for (DataSnapshot ds: dataSnapshot.getChildren()){
-                                            //String[] mIds = new String[mUserIds.size()];
-                                            long data = Long.parseLong(ds.getValue(User.class).getId());
-                                            long[] a = new long[]{data};
-                                            long max = firebaseDbMaxId+1;
-                                            for (int i=0; i<a.length; i++){
-                                                if (a[i] > max)
-                                                {
-                                                    max = a[i];
 
-                                                    Toast.makeText(mContext, max+"", Toast.LENGTH_SHORT).show();
+                                            long data = Long.parseLong(ds.getValue(User.class).getId());
+                                            //list.add(data);
+                                            long arr[] = {data};
+                                            max = arr[0];
+                                            for (int i=0; i<arr.length; i++)
+                                            {
+                                                if (arr[i] > max){
+                                                   max = arr[i];
                                                 }
                                             }
-
-                                            mUserIds.clear();
+                                           // mUserIds.clear();
 
                                         }
+                                        Log.d("MainActivity", "MAX: "+max+1);
+
+                                        User user1 = new User();
+                                        user1.setId(String.valueOf(max+1));
+                                        user1.setName(nameEt.getText().toString());
+                                        user1.setEmail(emailEt.getText().toString());
+
+                                        //Set to Firebase database
+                                        usersDb.child(String.valueOf(max+1)).setValue(user1)
+                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Toast.makeText(mContext,"User added successfully",Toast.LENGTH_SHORT).show();
+//                                                                    User user2 = new User(
+//                                                                            String.valueOf(firestoreDocMaxId+1),
+//                                                                            nameEt.getText().toString(),
+//                                                                            emailEt.getText().toString()
+//                                                                    );
+//
+//                                                                    //Set to Cloud Firestore
+//                                                                    FirebaseFirestore.getInstance()
+//                                                                            .collection("Users")
+//                                                                            .document(String.valueOf(firestoreDocMaxId+1))
+//                                                                            .set(user2)
+//                                                                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                                                @Override
+//                                                                                public void onSuccess(Void aVoid) {
+//                                                                                    Toast.makeText(mContext,"User added successfully",Toast.LENGTH_SHORT).show();
+//                                                                                }
+//                                                                            });
+                                                    }
+                                                });
+
                                     }
 
                                     @Override
                                     public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                                        //..
                                     }
                                 });
-//                        User user1 = new User();
-//                        user1.setId(String.valueOf(firebaseDbMaxId+1));
-//                        user1.setName(nameEt.getText().toString());
-//                        user1.setEmail(emailEt.getText().toString());
-//
-//                        //Set to Firebase database
-//                        usersDb.child(String.valueOf(firebaseDbMaxId+1)).setValue(user1)
-//                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                    @Override
-//                                    public void onSuccess(Void aVoid) {
-//                                        User user2 = new User(
-//                                                String.valueOf(firestoreDocMaxId+1),
-//                                                nameEt.getText().toString(),
-//                                                emailEt.getText().toString()
-//                                                );
-//
-//                                        //Set to Cloud Firestore
-//                                        FirebaseFirestore.getInstance()
-//                                                .collection("Users")
-//                                                .document(String.valueOf(firestoreDocMaxId+1))
-//                                                .set(user2)
-//                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-//                                                    @Override
-//                                                    public void onSuccess(Void aVoid) {
-//                                                        Toast.makeText(mContext,"User added successfully",Toast.LENGTH_SHORT).show();
-//                                                    }
-//                                                });
-//                                    }
-//                                });
 
                     }
                 });
