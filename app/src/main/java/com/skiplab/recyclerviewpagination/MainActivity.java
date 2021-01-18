@@ -292,7 +292,6 @@ public class MainActivity extends AppCompatActivity {
                         adapter.addAll(newUsers);
                         adapter.notifyDataSetChanged();
 
-
                     }
                     else   //reach to end no further child avaialable to show
                     {
@@ -348,5 +347,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
+    }
 }
