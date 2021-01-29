@@ -1,6 +1,8 @@
 package com.skiplab.recyclerviewpagination.Model;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     private String id, name, email;
 
     public User() {
