@@ -50,8 +50,11 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
         holder.txt_name.setText(userList.get(position).getName());
         holder.txt_email.setText(userList.get(position).getEmail());
+    }
 
-
+    public void clear() {
+        userList.clear();
+        notifyDataSetChanged();
     }
 
     @Override
